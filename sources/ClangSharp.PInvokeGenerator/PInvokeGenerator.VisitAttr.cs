@@ -2,11 +2,11 @@
 
 namespace ClangSharp
 {
-    public partial class PInvokeGenerator
-    {
-        private void VisitAttr(Attr attr)
-        {
-            // We don't consider most attributes particularly important and so we do nothing
-        }
-    }
+	public partial class PInvokeGenerator
+	{
+		private void VisitAttr(Attr attr)
+		{
+			// We don't consider most attributes particularly important and so we do nothing
+		}
+	}
 }

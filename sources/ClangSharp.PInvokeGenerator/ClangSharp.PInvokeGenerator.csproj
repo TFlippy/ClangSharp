@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <RootNamespace>ClangSharp</RootNamespace>
-    <LangVersion>preview</LangVersion>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<RootNamespace>ClangSharp</RootNamespace>
+		<LangVersion>preview</LangVersion>
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ClangSharp\ClangSharp.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ClangSharp\ClangSharp.csproj" />
+	</ItemGroup>
 
 </Project>

@@ -4,196 +4,195 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace ClangSharp
 {
-    public sealed class PInvokeGeneratorConfiguration
-    {
-        private const string DefaultMethodClassName = "Methods";
+	public sealed class PInvokeGeneratorConfiguration
+	{
+		private const string DefaultMethodClassName = "Methods";
 
-        private readonly Dictionary<string, string> _remappedNames;
-        private readonly Dictionary<string, IReadOnlyList<string>> _withAttributes;
-        private readonly Dictionary<string, string> _withCallConvs;
-        private readonly Dictionary<string, string> _withLibraryPaths;
-        private readonly Dictionary<string, string> _withTypes;
-        private readonly Dictionary<string, IReadOnlyList<string>> _withUsings;
-        private readonly PInvokeGeneratorConfigurationOptions _options;
+		private readonly Dictionary<string, string> _remappedNames;
+		private readonly Dictionary<string, IReadOnlyList<string>> _withAttributes;
+		private readonly Dictionary<string, string> _withCallConvs;
+		private readonly Dictionary<string, string> _withLibraryPaths;
+		private readonly Dictionary<string, string> _withTypes;
+		private readonly Dictionary<string, IReadOnlyList<string>> _withUsings;
+		private readonly PInvokeGeneratorConfigurationOptions _options;
 
-        public PInvokeGeneratorConfiguration(string libraryPath, string namespaceName, string outputLocation, string testOutputLocation, PInvokeGeneratorConfigurationOptions options = PInvokeGeneratorConfigurationOptions.None, string[] excludedNames = null, string headerFile = null, string methodClassName = null, string methodPrefixToStrip = null, IReadOnlyDictionary<string, string> remappedNames = null, string[] traversalNames = null, IReadOnlyDictionary<string, IReadOnlyList<string>> withAttributes = null, IReadOnlyDictionary<string, string> withCallConvs = null, IReadOnlyDictionary<string, string> withLibraryPaths = null, string[] withSetLastErrors = null, IReadOnlyDictionary<string, string> withTypes = null, IReadOnlyDictionary<string, IReadOnlyList<string>> withUsings = null, string[] suppressGcMethods = null)
-        {
-            if (excludedNames is null)
-            {
-                excludedNames = Array.Empty<string>();
-            }
+		public PInvokeGeneratorConfiguration(string libraryPath, string namespaceName, string outputLocation, string testOutputLocation, PInvokeGeneratorConfigurationOptions options = PInvokeGeneratorConfigurationOptions.None, string[] excludedNames = null, string headerFile = null, string methodClassName = null, string methodPrefixToStrip = null, IReadOnlyDictionary<string, string> remappedNames = null, string[] traversalNames = null, IReadOnlyDictionary<string, IReadOnlyList<string>> withAttributes = null, IReadOnlyDictionary<string, string> withCallConvs = null, IReadOnlyDictionary<string, string> withLibraryPaths = null, string[] withSetLastErrors = null, IReadOnlyDictionary<string, string> withTypes = null, IReadOnlyDictionary<string, IReadOnlyList<string>> withUsings = null, string[] suppressGcMethods = null)
+		{
+			if (excludedNames is null)
+			{
+				excludedNames = Array.Empty<string>();
+			}
 
-            if (suppressGcMethods is null)
-            {
-                suppressGcMethods = Array.Empty<string>();
-            }
+			if (suppressGcMethods is null)
+			{
+				suppressGcMethods = Array.Empty<string>();
+			}
 
-            if (string.IsNullOrWhiteSpace(libraryPath))
-            {
-                libraryPath = string.Empty;
-            }
+			if (string.IsNullOrWhiteSpace(libraryPath))
+			{
+				libraryPath = string.Empty;
+			}
 
-            if (string.IsNullOrWhiteSpace(methodClassName))
-            {
-                methodClassName = DefaultMethodClassName;
-            }
+			if (string.IsNullOrWhiteSpace(methodClassName))
+			{
+				methodClassName = DefaultMethodClassName;
+			}
 
-            if (string.IsNullOrWhiteSpace(methodPrefixToStrip))
-            {
-                methodPrefixToStrip = string.Empty;
-            }
+			if (string.IsNullOrWhiteSpace(methodPrefixToStrip))
+			{
+				methodPrefixToStrip = string.Empty;
+			}
 
-            if (string.IsNullOrWhiteSpace(namespaceName))
-            {
-                throw new ArgumentNullException(nameof(namespaceName));
-            }
+			if (string.IsNullOrWhiteSpace(namespaceName))
+			{
+				throw new ArgumentNullException(nameof(namespaceName));
+			}
 
-            if (options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode) && options.HasFlag(PInvokeGeneratorConfigurationOptions.GeneratePreviewCode))
-            {
-                throw new ArgumentOutOfRangeException(nameof(options));
-            }
+			if (options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode) && options.HasFlag(PInvokeGeneratorConfigurationOptions.GeneratePreviewCode))
+			{
+				throw new ArgumentOutOfRangeException(nameof(options));
+			}
 
-            if (string.IsNullOrWhiteSpace(outputLocation))
-            {
-                throw new ArgumentNullException(nameof(outputLocation));
-            }
+			if (string.IsNullOrWhiteSpace(outputLocation))
+			{
+				throw new ArgumentNullException(nameof(outputLocation));
+			}
 
-            if (traversalNames is null)
-            {
-                traversalNames = Array.Empty<string>();
-            }
+			if (traversalNames is null)
+			{
+				traversalNames = Array.Empty<string>();
+			}
 
-            if (withSetLastErrors is null)
-            {
-                withSetLastErrors = Array.Empty<string>();
-            }
+			if (withSetLastErrors is null)
+			{
+				withSetLastErrors = Array.Empty<string>();
+			}
 
-            _options = options;
-            _remappedNames = new Dictionary<string, string>();
-            _withAttributes = new Dictionary<string, IReadOnlyList<string>>();
-            _withCallConvs = new Dictionary<string, string>();
-            _withLibraryPaths = new Dictionary<string, string>();
-            _withTypes = new Dictionary<string, string>();
-            _withUsings = new Dictionary<string, IReadOnlyList<string>>();
+			this._options = options;
+			this._remappedNames = new Dictionary<string, string>();
+			this._withAttributes = new Dictionary<string, IReadOnlyList<string>>();
+			this._withCallConvs = new Dictionary<string, string>();
+			this._withLibraryPaths = new Dictionary<string, string>();
+			this._withTypes = new Dictionary<string, string>();
+			this._withUsings = new Dictionary<string, IReadOnlyList<string>>();
 
-            ExcludedNames = excludedNames.ToHashSet();
-            SuppressGCMethods = suppressGcMethods.ToList();
-            HeaderText = string.IsNullOrWhiteSpace(headerFile) ? string.Empty : File.ReadAllText(headerFile);
-            LibraryPath = $@"""{libraryPath}""";
-            MethodClassName = methodClassName;
-            MethodPrefixToStrip = methodPrefixToStrip;
-            Namespace = namespaceName;
-            OutputLocation = Path.GetFullPath(outputLocation);
-            TestOutputLocation = !string.IsNullOrWhiteSpace(testOutputLocation) ? Path.GetFullPath(testOutputLocation) : string.Empty;
+			this.ExcludedNames = excludedNames.ToHashSet();
+			this.SuppressGCMethods = suppressGcMethods.ToList();
+			this.HeaderText = string.IsNullOrWhiteSpace(headerFile) ? string.Empty : File.ReadAllText(headerFile);
+			this.LibraryPath = $@"""{libraryPath}""";
+			this.MethodClassName = methodClassName;
+			this.MethodPrefixToStrip = methodPrefixToStrip;
+			this.Namespace = namespaceName;
+			this.OutputLocation = Path.GetFullPath(outputLocation);
+			this.TestOutputLocation = !string.IsNullOrWhiteSpace(testOutputLocation) ? Path.GetFullPath(testOutputLocation) : string.Empty;
 
-            // Normalize the traversal names to use \ rather than / so path comparisons are simpler
-            TraversalNames = traversalNames.Select(traversalName => traversalName.Replace('\\', '/')).ToArray();
-            WithSetLastErrors = withSetLastErrors;
+			// Normalize the traversal names to use \ rather than / so path comparisons are simpler
+			this.TraversalNames = traversalNames.Select(traversalName => traversalName.Replace('\\', '/')).ToArray();
+			this.WithSetLastErrors = withSetLastErrors;
 
-            if (!_options.HasFlag(PInvokeGeneratorConfigurationOptions.NoDefaultRemappings))
-            {
-                if (GeneratePreviewCodeNint)
-                {
-                    _remappedNames.Add("intptr_t", "nint");
-                    _remappedNames.Add("ptrdiff_t", "nint");
-                    _remappedNames.Add("size_t", "nuint");
-                    _remappedNames.Add("uintptr_t", "nuint");
-                }
-                else
-                {
-                    _remappedNames.Add("intptr_t", "IntPtr");
-                    _remappedNames.Add("ptrdiff_t", "IntPtr");
-                    _remappedNames.Add("size_t", "UIntPtr");
-                    _remappedNames.Add("uintptr_t", "UIntPtr");
-                }
-            }
+			if (!this._options.HasFlag(PInvokeGeneratorConfigurationOptions.NoDefaultRemappings))
+			{
+				if (this.GeneratePreviewCodeNint)
+				{
+					this._remappedNames.Add("intptr_t", "nint");
+					this._remappedNames.Add("ptrdiff_t", "nint");
+					this._remappedNames.Add("size_t", "nuint");
+					this._remappedNames.Add("uintptr_t", "nuint");
+				}
+				else
+				{
+					this._remappedNames.Add("intptr_t", "IntPtr");
+					this._remappedNames.Add("ptrdiff_t", "IntPtr");
+					this._remappedNames.Add("size_t", "UIntPtr");
+					this._remappedNames.Add("uintptr_t", "UIntPtr");
+				}
+			}
 
-            AddRange(_remappedNames, remappedNames);
-            AddRange(_withAttributes, withAttributes);
-            AddRange(_withCallConvs, withCallConvs);
-            AddRange(_withLibraryPaths, withLibraryPaths);
-            AddRange(_withTypes, withTypes);
-            AddRange(_withUsings, withUsings);
-        }
+			AddRange(this._remappedNames, remappedNames);
+			AddRange(this._withAttributes, withAttributes);
+			AddRange(this._withCallConvs, withCallConvs);
+			AddRange(this._withLibraryPaths, withLibraryPaths);
+			AddRange(this._withTypes, withTypes);
+			AddRange(this._withUsings, withUsings);
+		}
 
-        public bool ExcludeComProxies => _options.HasFlag(PInvokeGeneratorConfigurationOptions.ExcludeComProxies);
+		public bool ExcludeComProxies => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.ExcludeComProxies);
 
-        public bool ExcludeEmptyRecords => _options.HasFlag(PInvokeGeneratorConfigurationOptions.ExcludeEmptyRecords);
+		public bool ExcludeEmptyRecords => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.ExcludeEmptyRecords);
 
-        public bool ExcludeEnumOperators => _options.HasFlag(PInvokeGeneratorConfigurationOptions.ExcludeEnumOperators);
+		public bool ExcludeEnumOperators => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.ExcludeEnumOperators);
 
-        public HashSet<string> ExcludedNames { get; }
-        public List<string> SuppressGCMethods { get; }
+		public HashSet<string> ExcludedNames { get; }
+		public List<string> SuppressGCMethods { get; }
 
-        public bool GenerateAggressiveInlining => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateAggressiveInlining);
+		public bool GenerateAggressiveInlining => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateAggressiveInlining);
 
-        public bool GenerateCompatibleCode => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode);
+		public bool GenerateCompatibleCode => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode);
 
-        public bool GenerateExplicitVtbls => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateExplicitVtbls);
+		public bool GenerateExplicitVtbls => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateExplicitVtbls);
 
-        public bool GenerateMacroBindings => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateMacroBindings);
+		public bool GenerateMacroBindings => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateMacroBindings);
 
-        public bool GeneratePreviewCodeFnptr => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GeneratePreviewCodeFnptr);
+		public bool GeneratePreviewCodeFnptr => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GeneratePreviewCodeFnptr);
 
-        public bool GeneratePreviewCodeNint => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GeneratePreviewCodeNint);
+		public bool GeneratePreviewCodeNint => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GeneratePreviewCodeNint);
 
-        public bool GenerateMultipleFiles => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateMultipleFiles);
+		public bool GenerateMultipleFiles => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateMultipleFiles);
 
-        public bool GenerateTestsNUnit => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateTestsNUnit);
+		public bool GenerateTestsNUnit => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateTestsNUnit);
 
-        public bool GenerateTestsXUnit => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateTestsXUnit);
+		public bool GenerateTestsXUnit => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateTestsXUnit);
 
-        public bool GenerateUnixTypes => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateUnixTypes);
+		public bool GenerateUnixTypes => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateUnixTypes);
 
-        public string HeaderText { get; }
+		public string HeaderText { get; }
 
-        public string LibraryPath { get;}
+		public string LibraryPath { get; }
 
-        public bool LogExclusions => _options.HasFlag(PInvokeGeneratorConfigurationOptions.LogExclusions);
+		public bool LogExclusions => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.LogExclusions);
 
-        public bool LogVisitedFiles => _options.HasFlag(PInvokeGeneratorConfigurationOptions.LogVisitedFiles);
+		public bool LogVisitedFiles => this._options.HasFlag(PInvokeGeneratorConfigurationOptions.LogVisitedFiles);
 
-        public string MethodClassName { get; }
+		public string MethodClassName { get; }
 
-        public string MethodPrefixToStrip { get;}
+		public string MethodPrefixToStrip { get; }
 
-        public string Namespace { get; }
+		public string Namespace { get; }
 
-        public string OutputLocation { get; }
+		public string OutputLocation { get; }
 
-        public IReadOnlyDictionary<string, string> RemappedNames => _remappedNames;
+		public IReadOnlyDictionary<string, string> RemappedNames => this._remappedNames;
 
-        public string TestOutputLocation { get; }
+		public string TestOutputLocation { get; }
 
-        public string[] TraversalNames { get; }
+		public string[] TraversalNames { get; }
 
-        public IReadOnlyDictionary<string, IReadOnlyList<string>> WithAttributes => _withAttributes;
+		public IReadOnlyDictionary<string, IReadOnlyList<string>> WithAttributes => this._withAttributes;
 
-        public IReadOnlyDictionary<string, string> WithCallConvs => _withCallConvs;
+		public IReadOnlyDictionary<string, string> WithCallConvs => this._withCallConvs;
 
-        public IReadOnlyDictionary<string, string> WithLibraryPaths => _withLibraryPaths;
+		public IReadOnlyDictionary<string, string> WithLibraryPaths => this._withLibraryPaths;
 
-        public string[] WithSetLastErrors { get; }
+		public string[] WithSetLastErrors { get; }
 
-        public IReadOnlyDictionary<string, string> WithTypes => _withTypes;
+		public IReadOnlyDictionary<string, string> WithTypes => this._withTypes;
 
-        public IReadOnlyDictionary<string, IReadOnlyList<string>> WithUsings => _withUsings;
+		public IReadOnlyDictionary<string, IReadOnlyList<string>> WithUsings => this._withUsings;
 
-        private static void AddRange<TValue>(Dictionary<string, TValue> dictionary, IEnumerable<KeyValuePair<string, TValue>> keyValuePairs)
-        {
-            if (keyValuePairs != null)
-            {
-                foreach (var keyValuePair in keyValuePairs)
-                {
-                    // Use the indexer, rather than Add, so that any
-                    // default mappings can be overwritten if desired.
-                    dictionary[keyValuePair.Key] = keyValuePair.Value;
-                }
-            }
-        }
-    }
+		private static void AddRange<TValue>(Dictionary<string, TValue> dictionary, IEnumerable<KeyValuePair<string, TValue>> keyValuePairs)
+		{
+			if (keyValuePairs != null)
+			{
+				foreach (var keyValuePair in keyValuePairs)
+				{
+					// Use the indexer, rather than Add, so that any
+					// default mappings can be overwritten if desired.
+					dictionary[keyValuePair.Key] = keyValuePair.Value;
+				}
+			}
+		}
+	}
 }

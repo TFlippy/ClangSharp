@@ -2,12 +2,12 @@
 
 namespace ClangSharp
 {
-    public partial class PInvokeGenerator
-    {
-        private void VisitRef(Ref @ref)
-        {
-            var name = GetRemappedCursorName(@ref.Referenced);
-            _outputBuilder.Write(name);
-        }
-    }
+	public partial class PInvokeGenerator
+	{
+		private void VisitRef(Ref @ref)
+		{
+			var name = this.GetRemappedCursorName(@ref.Referenced);
+			this._outputBuilder.Write(name);
+		}
+	}
 }

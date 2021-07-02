@@ -4,43 +4,43 @@ using System;
 
 namespace ClangSharp
 {
-    [Flags]
-    public enum PInvokeGeneratorConfigurationOptions
-    {
-        None = 0x00000000,
+	[Flags]
+	public enum PInvokeGeneratorConfigurationOptions
+	{
+		None = 0x00000000,
 
-        GenerateMultipleFiles = 0x00000001,
+		GenerateMultipleFiles = 0x00000001,
 
-        GenerateUnixTypes = 0x00000002,
+		GenerateUnixTypes = 0x00000002,
 
-        NoDefaultRemappings = 0x00000004,
+		NoDefaultRemappings = 0x00000004,
 
-        GenerateCompatibleCode = 0x00000008,
+		GenerateCompatibleCode = 0x00000008,
 
-        GeneratePreviewCodeNint = 0x00000010,
+		GeneratePreviewCodeNint = 0x00000010,
 
-        GeneratePreviewCodeFnptr = 0x00000020,
+		GeneratePreviewCodeFnptr = 0x00000020,
 
-        GeneratePreviewCode = GeneratePreviewCodeNint | GeneratePreviewCodeFnptr,
+		GeneratePreviewCode = GeneratePreviewCodeNint | GeneratePreviewCodeFnptr,
 
-        LogExclusions = 0x00000040,
+		LogExclusions = 0x00000040,
 
-        LogVisitedFiles = 0x00000080,
+		LogVisitedFiles = 0x00000080,
 
-        GenerateExplicitVtbls = 0x00000100,
+		GenerateExplicitVtbls = 0x00000100,
 
-        GenerateTestsNUnit = 0x00000200,
+		GenerateTestsNUnit = 0x00000200,
 
-        GenerateTestsXUnit = 0x00000400,
+		GenerateTestsXUnit = 0x00000400,
 
-        GenerateMacroBindings = 0x00000800,
+		GenerateMacroBindings = 0x00000800,
 
-        ExcludeComProxies = 0x00001000,
+		ExcludeComProxies = 0x00001000,
 
-        ExcludeEmptyRecords = 0x00002000,
+		ExcludeEmptyRecords = 0x00002000,
 
-        ExcludeEnumOperators = 0x00004000,
+		ExcludeEnumOperators = 0x00004000,
 
-        GenerateAggressiveInlining = 0x00008000,
-    }
+		GenerateAggressiveInlining = 0x00008000,
+	}
 }

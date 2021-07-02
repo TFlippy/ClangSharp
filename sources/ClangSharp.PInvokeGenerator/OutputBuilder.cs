@@ -6,153 +6,153 @@ using System.Text;
 
 namespace ClangSharp
 {
-    public sealed class OutputBuilder
-    {
-        public const string DefaultIndentationString = "    ";
+	public sealed class OutputBuilder
+	{
+		public const string DefaultIndentationString = "    ";
 
-        private readonly string _name;
-        private readonly List<string> _contents;
-        private readonly StringBuilder _currentLine;
-        private readonly SortedSet<string> _usingDirectives;
-        private readonly SortedSet<string> _staticUsingDirectives;
-        private readonly string _indentationString;
-        private readonly bool _isTestOutput;
+		private readonly string _name;
+		private readonly List<string> _contents;
+		private readonly StringBuilder _currentLine;
+		private readonly SortedSet<string> _usingDirectives;
+		private readonly SortedSet<string> _staticUsingDirectives;
+		private readonly string _indentationString;
+		private readonly bool _isTestOutput;
 
-        private int _indentationLevel;
+		private int _indentationLevel;
 
-        public OutputBuilder(string name, string indentationString = DefaultIndentationString, bool isTestOutput = false)
-        {
-            _name = name;
-            _contents = new List<string>();
-            _currentLine = new StringBuilder();
-            _usingDirectives = new SortedSet<string>();
-            _staticUsingDirectives = new SortedSet<string>();
-            _indentationString = indentationString;
-            _isTestOutput = isTestOutput;
-        }
+		public OutputBuilder(string name, string indentationString = DefaultIndentationString, bool isTestOutput = false)
+		{
+			this._name = name;
+			this._contents = new List<string>();
+			this._currentLine = new StringBuilder();
+			this._usingDirectives = new SortedSet<string>();
+			this._staticUsingDirectives = new SortedSet<string>();
+			this._indentationString = indentationString;
+			this._isTestOutput = isTestOutput;
+		}
 
-        public IEnumerable<string> Contents => _contents;
+		public IEnumerable<string> Contents => this._contents;
 
-        public string IndentationString => _indentationString;
+		public string IndentationString => this._indentationString;
 
-        public bool IsTestOutput => _isTestOutput;
+		public bool IsTestOutput => this._isTestOutput;
 
-        public string Name => _name;
+		public string Name => this._name;
 
-        public bool NeedsNewline { get; set; }
+		public bool NeedsNewline { get; set; }
 
-        public bool NeedsSemicolon { get; set; }
+		public bool NeedsSemicolon { get; set; }
 
-        public IEnumerable<string> StaticUsingDirectives => _staticUsingDirectives;
+		public IEnumerable<string> StaticUsingDirectives => this._staticUsingDirectives;
 
-        public IEnumerable<string> UsingDirectives => _usingDirectives;
+		public IEnumerable<string> UsingDirectives => this._usingDirectives;
 
-        public void AddUsingDirective(string namespaceName)
-        {
-            if (namespaceName.StartsWith("static "))
-            {
-                _staticUsingDirectives.Add(namespaceName);
-            }
-            else
-            {
-                _usingDirectives.Add(namespaceName);
-            }
-        }
+		public void AddUsingDirective(string namespaceName)
+		{
+			if (namespaceName.StartsWith("static "))
+			{
+				this._staticUsingDirectives.Add(namespaceName);
+			}
+			else
+			{
+				this._usingDirectives.Add(namespaceName);
+			}
+		}
 
-        public void DecreaseIndentation()
-        {
-            if (_indentationLevel == 0)
-            {
-                throw new InvalidOperationException();
-            }
+		public void DecreaseIndentation()
+		{
+			if (this._indentationLevel == 0)
+			{
+				throw new InvalidOperationException();
+			}
 
-            _indentationLevel--;
-        }
+			this._indentationLevel--;
+		}
 
-        public void IncreaseIndentation()
-        {
-            _indentationLevel++;
-        }
+		public void IncreaseIndentation()
+		{
+			this._indentationLevel++;
+		}
 
-        public void WriteBlockStart()
-        {
-            WriteIndentedLine('{');
-            IncreaseIndentation();
-        }
+		public void WriteBlockStart()
+		{
+			this.WriteIndentedLine('{');
+			this.IncreaseIndentation();
+		}
 
-        public void WriteBlockEnd()
-        {
-            // We don't need a newline if immediately closing the scope
-            NeedsNewline = false;
+		public void WriteBlockEnd()
+		{
+			// We don't need a newline if immediately closing the scope
+			this.NeedsNewline = false;
 
-            // We don't need a semicolon if immediately closing the scope
-            NeedsSemicolon = false;
+			// We don't need a semicolon if immediately closing the scope
+			this.NeedsSemicolon = false;
 
-            DecreaseIndentation();
-            WriteIndentedLine('}');
-        }
+			this.DecreaseIndentation();
+			this.WriteIndentedLine('}');
+		}
 
-        public void Write<T>(T value)
-        {
-            _currentLine.Append(value);
-        }
+		public void Write<T>(T value)
+		{
+			this._currentLine.Append(value);
+		}
 
-        public void WriteIndentation()
-        {
-            WriteNewlineIfNeeded();
+		public void WriteIndentation()
+		{
+			this.WriteNewlineIfNeeded();
 
-            for (var i = 0; i < _indentationLevel; i++)
-            {
-                _currentLine.Append(_indentationString);
-            }
-        }
+			for (var i = 0; i < this._indentationLevel; i++)
+			{
+				this._currentLine.Append(this._indentationString);
+			}
+		}
 
-        public void WriteIndented<T>(T value)
-        {
-            WriteIndentation();
-            Write(value);
-        }
+		public void WriteIndented<T>(T value)
+		{
+			this.WriteIndentation();
+			this.Write(value);
+		}
 
-        public void WriteIndentedLine<T>(T value)
-        {
-            WriteIndentation();
-            WriteLine(value);
-        }
+		public void WriteIndentedLine<T>(T value)
+		{
+			this.WriteIndentation();
+			this.WriteLine(value);
+		}
 
-        public void WriteLine<T>(T value)
-        {
-            Write(value);
-            WriteNewline();
-        }
+		public void WriteLine<T>(T value)
+		{
+			this.Write(value);
+			this.WriteNewline();
+		}
 
-        public void WriteNewline()
-        {
-            _contents.Add(_currentLine.ToString());
-            _currentLine.Clear();
-            NeedsNewline = false;
-        }
+		public void WriteNewline()
+		{
+			this._contents.Add(this._currentLine.ToString());
+			this._currentLine.Clear();
+			this.NeedsNewline = false;
+		}
 
-        public void WriteNewlineIfNeeded()
-        {
-            if (NeedsNewline)
-            {
-                WriteNewline();   
-            }
-        }
+		public void WriteNewlineIfNeeded()
+		{
+			if (this.NeedsNewline)
+			{
+				this.WriteNewline();
+			}
+		}
 
-        public void WriteSemicolon()
-        {
-            Write(';');
-            NeedsSemicolon = false;
-            NeedsNewline = true;
-        }
+		public void WriteSemicolon()
+		{
+			this.Write(';');
+			this.NeedsSemicolon = false;
+			this.NeedsNewline = true;
+		}
 
-        public void WriteSemicolonIfNeeded()
-        {
-            if (NeedsSemicolon)
-            {
-                WriteSemicolon();   
-            }
-        }
-    }
+		public void WriteSemicolonIfNeeded()
+		{
+			if (this.NeedsSemicolon)
+			{
+				this.WriteSemicolon();
+			}
+		}
+	}
 }

@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <LangVersion>preview</LangVersion>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<LangVersion>preview</LangVersion>
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
-    <PackAsTool>true</PackAsTool>
-    <RuntimeIdentifier></RuntimeIdentifier>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
+		<PackAsTool>true</PackAsTool>
+		<RuntimeIdentifier></RuntimeIdentifier>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="Properties/GenerateClang.rsp" />
-    <None Include="Properties/GenerateClang-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Properties/GenerateClangSharp.rsp" />
-    <None Include="Properties/GenerateClangSharp-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Properties/GenerateLLVM.rsp" />
-    <None Include="Properties/GenerateLLVM-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Properties/launchsettings.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="Properties/GenerateClang.rsp" />
+		<None Include="Properties/GenerateClang-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="Properties/GenerateClangSharp.rsp" />
+		<None Include="Properties/GenerateClangSharp-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="Properties/GenerateLLVM.rsp" />
+		<None Include="Properties/GenerateLLVM-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="Properties/launchsettings.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.CommandLine" GeneratePathProperty="true" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="System.CommandLine" GeneratePathProperty="true" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ClangSharp.PInvokeGenerator\ClangSharp.PInvokeGenerator.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ClangSharp.PInvokeGenerator\ClangSharp.PInvokeGenerator.csproj" />
+	</ItemGroup>
 
-  <PropertyGroup>
-    <LibClangName Condition="'$(LibClangName)' == ''">libclang</LibClangName>
-    <LibClangSharpName Condition="'$(LibClangSharpName)' == ''">libClangSharp</LibClangSharpName>
-    <LibLLVMName Condition="'$(LibLLVMName)' == ''">libLLVM</LibLLVMName>
-  </PropertyGroup>
+	<PropertyGroup>
+		<LibClangName Condition="'$(LibClangName)' == ''">libclang</LibClangName>
+		<LibClangSharpName Condition="'$(LibClangSharpName)' == ''">libClangSharp</LibClangSharpName>
+		<LibLLVMName Condition="'$(LibLLVMName)' == ''">libLLVM</LibLLVMName>
+	</PropertyGroup>
 
-  <!-- Auto-detect LLVM... more or less -->
-  <PropertyGroup Condition="'$(LLVMIncludePath)' == ''">
-    <LLVMIncludePath Condition="'$(OS)' == 'Windows_NT'">C:\Program Files\LLVM\include</LLVMIncludePath>
-    <LLVMIncludePath Condition="'$(OS)' != 'Windows_NT'">/usr/lib/llvm-10/include</LLVMIncludePath>
-  </PropertyGroup>
+	<!-- Auto-detect LLVM... more or less -->
+	<PropertyGroup Condition="'$(LLVMIncludePath)' == ''">
+		<LLVMIncludePath Condition="'$(OS)' == 'Windows_NT'">C:\Program Files\LLVM\include</LLVMIncludePath>
+		<LLVMIncludePath Condition="'$(OS)' != 'Windows_NT'">/usr/lib/llvm-10/include</LLVMIncludePath>
+	</PropertyGroup>
 
 </Project>
