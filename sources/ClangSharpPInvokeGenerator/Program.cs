@@ -48,6 +48,7 @@ namespace ClangSharp
             AddWithSetLastErrorOption(s_rootCommand);
             AddWithTypeOption(s_rootCommand);
             AddWithUsingOption(s_rootCommand);
+            AddGCTransitionOption(s_rootCommand);
 
             return await s_rootCommand.InvokeAsync(args);
         }
@@ -78,6 +79,7 @@ namespace ClangSharp
             var withSetLastErrors = context.ParseResult.ValueForOption<string[]>("with-setlasterror");
             var withTypeNameValuePairs = context.ParseResult.ValueForOption<string[]>("with-type");
             var withUsingNameValuePairs = context.ParseResult.ValueForOption<string[]>("with-using");
+            var suppressGcMethods = context.ParseResult.ValueForOption<string[]>("suppress-gc");
 
             var errorList = new List<string>();
 
@@ -301,12 +303,17 @@ namespace ClangSharp
             clangCommandLineArgs = clangCommandLineArgs.Concat(defineMacros.Select(x => "--define-macro=" + x)).ToArray();
             clangCommandLineArgs = clangCommandLineArgs.Concat(additionalArgs).ToArray();
 
+            foreach (var arg in clangCommandLineArgs)
+            {
+                Console.WriteLine(arg);
+            }
+
             var translationFlags = CXTranslationUnit_Flags.CXTranslationUnit_None;
 
             translationFlags |= CXTranslationUnit_Flags.CXTranslationUnit_IncludeAttributedTypes;               // Include attributed types in CXType
             translationFlags |= CXTranslationUnit_Flags.CXTranslationUnit_VisitImplicitAttributes;              // Implicit attributes should be visited
 
-            var config = new PInvokeGeneratorConfiguration(libraryPath, namespaceName, outputLocation, testOutputLocation, configOptions, excludedNames, headerFile, methodClassName, methodPrefixToStrip, remappedNames, traversalNames, withAttributes, withCallConvs, withLibraryPath, withSetLastErrors, withTypes, withUsings);
+            var config = new PInvokeGeneratorConfiguration(libraryPath, namespaceName, outputLocation, testOutputLocation, configOptions, excludedNames, headerFile, methodClassName, methodPrefixToStrip, remappedNames, traversalNames, withAttributes, withCallConvs, withLibraryPath, withSetLastErrors, withTypes, withUsings, suppressGcMethods);
 
             if (config.GenerateMacroBindings)
             {
@@ -802,6 +809,21 @@ namespace ClangSharp
             var option = new Option(new string[] { "--with-using", "-wu" }, "A using directive to be included for the given remapped declaration name during binding generation.")
             {
                 Argument = new Argument("<remapped-name>=<value>")
+                {
+                    ArgumentType = typeof(string),
+                    Arity = ArgumentArity.OneOrMore,
+                }
+            };
+            option.Argument.SetDefaultValue(Array.Empty<string>());
+
+            rootCommand.AddOption(option);
+        }
+
+        private static void AddGCTransitionOption(RootCommand rootCommand)
+        {
+            var option = new Option(new string[] { "--suppress-gc", "-sgc" }, "Appends a SuppressGCTransition attribute to the method.")
+            {
+                Argument = new Argument("<name>")
                 {
                     ArgumentType = typeof(string),
                     Arity = ArgumentArity.OneOrMore,

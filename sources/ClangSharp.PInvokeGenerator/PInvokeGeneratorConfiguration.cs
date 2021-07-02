@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ClangSharp
 {
@@ -19,11 +20,16 @@ namespace ClangSharp
         private readonly Dictionary<string, IReadOnlyList<string>> _withUsings;
         private readonly PInvokeGeneratorConfigurationOptions _options;
 
-        public PInvokeGeneratorConfiguration(string libraryPath, string namespaceName, string outputLocation, string testOutputLocation, PInvokeGeneratorConfigurationOptions options = PInvokeGeneratorConfigurationOptions.None, string[] excludedNames = null, string headerFile = null, string methodClassName = null, string methodPrefixToStrip = null, IReadOnlyDictionary<string, string> remappedNames = null, string[] traversalNames = null, IReadOnlyDictionary<string, IReadOnlyList<string>> withAttributes = null, IReadOnlyDictionary<string, string> withCallConvs = null, IReadOnlyDictionary<string, string> withLibraryPaths = null, string[] withSetLastErrors = null, IReadOnlyDictionary<string, string> withTypes = null, IReadOnlyDictionary<string, IReadOnlyList<string>> withUsings = null)
+        public PInvokeGeneratorConfiguration(string libraryPath, string namespaceName, string outputLocation, string testOutputLocation, PInvokeGeneratorConfigurationOptions options = PInvokeGeneratorConfigurationOptions.None, string[] excludedNames = null, string headerFile = null, string methodClassName = null, string methodPrefixToStrip = null, IReadOnlyDictionary<string, string> remappedNames = null, string[] traversalNames = null, IReadOnlyDictionary<string, IReadOnlyList<string>> withAttributes = null, IReadOnlyDictionary<string, string> withCallConvs = null, IReadOnlyDictionary<string, string> withLibraryPaths = null, string[] withSetLastErrors = null, IReadOnlyDictionary<string, string> withTypes = null, IReadOnlyDictionary<string, IReadOnlyList<string>> withUsings = null, string[] suppressGcMethods = null)
         {
             if (excludedNames is null)
             {
                 excludedNames = Array.Empty<string>();
+            }
+
+            if (suppressGcMethods is null)
+            {
+                suppressGcMethods = Array.Empty<string>();
             }
 
             if (string.IsNullOrWhiteSpace(libraryPath))
@@ -74,7 +80,8 @@ namespace ClangSharp
             _withTypes = new Dictionary<string, string>();
             _withUsings = new Dictionary<string, IReadOnlyList<string>>();
 
-            ExcludedNames = excludedNames;
+            ExcludedNames = excludedNames.ToHashSet();
+            SuppressGCMethods = suppressGcMethods.ToList();
             HeaderText = string.IsNullOrWhiteSpace(headerFile) ? string.Empty : File.ReadAllText(headerFile);
             LibraryPath = $@"""{libraryPath}""";
             MethodClassName = methodClassName;
@@ -119,7 +126,8 @@ namespace ClangSharp
 
         public bool ExcludeEnumOperators => _options.HasFlag(PInvokeGeneratorConfigurationOptions.ExcludeEnumOperators);
 
-        public string[] ExcludedNames { get; }
+        public HashSet<string> ExcludedNames { get; }
+        public List<string> SuppressGCMethods { get; }
 
         public bool GenerateAggressiveInlining => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateAggressiveInlining);
 

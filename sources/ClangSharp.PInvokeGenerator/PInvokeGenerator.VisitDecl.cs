@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using ClangSharp.Interop;
 
 namespace ClangSharp
@@ -268,6 +269,13 @@ namespace ClangSharp
             if (enumConstantDecl.InitExpr != null)
             {
                 _outputBuilder.Write(" = ");
+
+                //if (isAnonymousEnum)
+                //{
+                //    _outputBuilder.Write(_config.MethodClassName);
+                //    _outputBuilder.Write('.');
+                //}
+
                 UncheckStmt(typeName, enumConstantDecl.InitExpr);
             }
             else if (isAnonymousEnum)
@@ -350,6 +358,11 @@ namespace ClangSharp
             {
                 _outputBuilder.WriteIndentedLine("[FieldOffset(0)]");
             }
+            else
+            {
+                _outputBuilder.WriteIndentedLine($"[FieldOffset({fieldDecl.Handle.OffsetOfField / 8})]");
+            }
+
             AddNativeTypeNameAttribute(nativeTypeName);
 
             _outputBuilder.WriteIndented(accessSpecifier);
@@ -403,14 +416,17 @@ namespace ClangSharp
 
         private void VisitFunctionDecl(FunctionDecl functionDecl)
         {
-            if (IsExcluded(functionDecl))
-            {
-                return;
-            }
+            if (IsExcluded(functionDecl)) return;
+            if (functionDecl.HasBody) return;
+            if (functionDecl.Access == CX_CXXAccessSpecifier.CX_CXXProtected || functionDecl.Access == CX_CXXAccessSpecifier.CX_CXXPrivate) return;
+            if (functionDecl is CXXConstructorDecl) return;
+            if (functionDecl is CXXConversionDecl) return;
+            if (functionDecl is CXXDestructorDecl) return;
 
             var accessSppecifier = GetAccessSpecifierName(functionDecl);
             var name = GetRemappedCursorName(functionDecl);
             var escapedName = EscapeName(name);
+
 
             if (!(functionDecl.DeclContext is CXXRecordDecl cxxRecordDecl))
             {
@@ -494,6 +510,23 @@ namespace ClangSharp
                 WithSetLastError(name);
                 _outputBuilder.WriteLine(")]");
             }
+
+            foreach (var regex in this.Config.SuppressGCMethods)
+            {
+                var match = Regex.Match(name, regex);
+                if (match.Success && match.Value.Length == name.Length)
+                {
+                    Console.WriteLine(name);
+                    _outputBuilder.WriteLine("[SuppressGCTransition]");
+                    break;
+                }
+            }
+
+            //if (this.Config.SuppressGCMethods.Contains(name))
+            //{
+            //    Console.WriteLine(name);
+            //    _outputBuilder.WriteLine("[SuppressGCTransition]");
+            //}
 
             var returnType = functionDecl.ReturnType;
             var returnTypeName = GetRemappedTypeName(functionDecl, cxxRecordDecl, returnType, out var nativeTypeName);
@@ -828,6 +861,8 @@ namespace ClangSharp
                 }
 
                 var alignment = recordDecl.TypeForDecl.Handle.AlignOf;
+                if (alignment <= 0) alignment = 1;
+
                 var maxAlignm = recordDecl.Fields.Any() ? recordDecl.Fields.Max((fieldDecl) => fieldDecl.Type.Handle.AlignOf) : alignment;
 
                 if ((_testOutputBuilder != null) && !recordDecl.IsAnonymousStructOrUnion && !(recordDecl.DeclContext is RecordDecl))
@@ -846,17 +881,17 @@ namespace ClangSharp
                     _outputBuilder.AddUsingDirective("System.Runtime.InteropServices");
                     _outputBuilder.WriteIndented("[StructLayout(LayoutKind.Explicit");
 
-                    if (alignment < maxAlignm)
-                    {
-                        _outputBuilder.Write(", Pack = ");
-                        _outputBuilder.Write(alignment);
-                    }
+
+                    _outputBuilder.Write(", Pack = ");
+                    _outputBuilder.Write(alignment);
+
+
                     _outputBuilder.WriteLine(")]");
                 }
-                else if (alignment < maxAlignm)
+                else
                 {
                     _outputBuilder.AddUsingDirective("System.Runtime.InteropServices");
-                    _outputBuilder.WriteIndented("[StructLayout(LayoutKind.Sequential");
+                    _outputBuilder.WriteIndented("[StructLayout(LayoutKind.Explicit");
 
                     _outputBuilder.Write(", Pack = ");
                     _outputBuilder.Write(alignment);
@@ -1644,7 +1679,7 @@ namespace ClangSharp
                                 _outputBuilder.AddUsingDirective("System");
                                 _outputBuilder.Write("Span<");
                             }
-                            else if(!isSupportedFixedSizedBufferType)
+                            else if (!isSupportedFixedSizedBufferType)
                             {
                                 _outputBuilder.Write(contextType);
                                 _outputBuilder.Write('.');
@@ -2181,14 +2216,11 @@ namespace ClangSharp
                 var alignment = recordDecl.TypeForDecl.Handle.AlignOf;
                 var maxAlignm = recordDecl.Fields.Max((fieldDecl) => fieldDecl.Type.Handle.AlignOf);
 
-                if (alignment < maxAlignm)
-                {
-                    _outputBuilder.AddUsingDirective("System.Runtime.InteropServices");
-                    _outputBuilder.WriteIndented("[StructLayout(LayoutKind.Sequential");
-                    _outputBuilder.Write(", Pack = ");
-                    _outputBuilder.Write(alignment);
-                    _outputBuilder.WriteLine(")]");
-                }
+                _outputBuilder.AddUsingDirective("System.Runtime.InteropServices");
+                _outputBuilder.WriteIndented("[StructLayout(LayoutKind.Sequential");
+                _outputBuilder.Write(", Pack = ");
+                _outputBuilder.Write(alignment);
+                _outputBuilder.WriteLine(")]");
 
                 var accessSpecifier = GetAccessSpecifierName(constantArray);
                 var canonicalElementType = type.ElementType.CanonicalType;
@@ -2322,14 +2354,15 @@ namespace ClangSharp
 
                     _outputBuilder.WriteIndentedLine("get");
                     _outputBuilder.WriteBlockStart();
-                    _outputBuilder.WriteIndented("return ref AsSpan(");
+                    //_outputBuilder.WriteIndented("return ref AsSpan(");
+                    _outputBuilder.WriteIndented($"return ref (({typeName}*)Unsafe.AsPointer(ref this))[index]");
 
-                    if (type.Size == 1)
-                    {
-                        _outputBuilder.Write("int.MaxValue");
-                    }
+                    //if (type.Size == 1)
+                    //{
+                    //    _outputBuilder.Write("int.MaxValue");
+                    //}
 
-                    _outputBuilder.Write(")[index]");
+                    //_outputBuilder.Write("[index]");
                     _outputBuilder.WriteSemicolon();
                     _outputBuilder.WriteNewline();
                     _outputBuilder.WriteBlockEnd();

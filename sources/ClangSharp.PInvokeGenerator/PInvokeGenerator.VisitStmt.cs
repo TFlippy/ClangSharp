@@ -391,13 +391,16 @@ namespace ClangSharp
 
         private void VisitDeclRefExpr(DeclRefExpr declRefExpr)
         {
+            var name = GetRemappedCursorName(declRefExpr.Decl);
+
             if ((declRefExpr.Decl is EnumConstantDecl enumConstantDecl) && (declRefExpr.DeclContext != enumConstantDecl.DeclContext) && (enumConstantDecl.DeclContext is NamedDecl namedDecl))
             {
-                var enumName = GetRemappedCursorName(namedDecl);
-                _outputBuilder.AddUsingDirective($"static {_config.Namespace}.{enumName}");
+                name = $"{_config.MethodClassName}.{name}";
+
+                //var enumName = GetRemappedCursorName(namedDecl);
+                //_outputBuilder.AddUsingDirective($"static {_config.Namespace}.{enumName}");
             }
 
-            var name = GetRemappedCursorName(declRefExpr.Decl);
             _outputBuilder.Write(EscapeAndStripName(name));
         }
 
@@ -439,7 +442,7 @@ namespace ClangSharp
             _outputBuilder.WriteLine("do");
 
             VisitBody(doStmt.Body);
-            
+
             _outputBuilder.WriteIndented("while (");
 
             Visit(doStmt.Cond);
